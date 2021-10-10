@@ -13,32 +13,22 @@
 namespace ThreadPool {
     namespace {
         template<typename T>
-        struct IsSharedPtrHelper {
-            constexpr static const bool value = false;
-        };
+        struct IsSharedPtrHelper { constexpr static const bool value = false; };
 
         template<typename Value_t>
-        struct IsSharedPtrHelper<std::shared_ptr<Value_t>> {
-            constexpr static const bool value = true;
-        };
+        struct IsSharedPtrHelper<std::shared_ptr<Value_t>> { constexpr static const bool value = true; };
 
         template<typename T>
-        struct IsUniquePtrHelper {
-            constexpr static const bool value = false;
-        };
+        struct IsUniquePtrHelper { constexpr static const bool value = false; };
 
         template<typename Value_t, typename T_Deleter_t>
-        struct IsUniquePtrHelper<std::unique_ptr<Value_t, T_Deleter_t>> {
-            constexpr static const bool value = true;
-        };
+        struct IsUniquePtrHelper<std::unique_ptr<Value_t, T_Deleter_t>> { constexpr static const bool value = true; };
 
         template<typename T>
-        concept IsSharedPtr = IsSharedPtrHelper<std::decay_t<T >>
-        ::value;
+        concept IsSharedPtr = IsSharedPtrHelper<std::decay_t<T >>::value;
 
         template<typename T>
-        concept IsUniquePtr = IsUniquePtrHelper<std::decay_t<T >>
-        ::value;
+        concept IsUniquePtr = IsUniquePtrHelper<std::decay_t<T >> ::value;
 
         template<typename T>
         concept IsSupportedPtr = IsSharedPtr<T> || IsUniquePtr<T>;
@@ -55,7 +45,6 @@ namespace ThreadPool {
         struct SubmitHelper {
             template<typename F, typename ...Args>
             requires AllAreSupportedPtrs<Args...>
-
             static auto submit(std::decay_t<F> f, std::decay_t<Args> ...args) {
                 auto promise = std::make_shared<std::promise<Ret_t >>();
                 auto wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise]() mutable -> void {
@@ -71,7 +60,6 @@ namespace ThreadPool {
         struct SubmitHelper<void> {
             template<typename F, typename ...Args>
             requires AllAreSupportedPtrs<Args...>
-
             static auto submit(std::decay_t<F> f, std::decay_t<Args> ...args) {
                 auto promise = std::make_shared<std::promise<void >>();
                 auto wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise]() mutable -> void {
@@ -95,7 +83,6 @@ namespace ThreadPool {
             return std::get<0>(tuple);
         };
     };
-
 }
 
 #endif //CPPTHREADPOOL_THREADPOOL_H
