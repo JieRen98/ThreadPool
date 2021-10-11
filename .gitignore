@@ -71,6 +71,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # vscode ================================
+.vs
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
