@@ -18,7 +18,7 @@ namespace ThreadPool {
 
         template<typename Ret_t>
         struct SubmitHelper {
-            template<typename F, IsSupportedPtr ...Args>
+            template<typename F, CP::IsSupportedPtr ...Args>
                 static auto submit(std::decay_t<F> f, std::decay_t<Args> ...args) {
                 auto promise = std::make_shared<std::promise<Ret_t >>();
                 auto wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise]() mutable -> void {
@@ -32,7 +32,7 @@ namespace ThreadPool {
 
         template<>
         struct SubmitHelper<void> {
-            template<typename F, IsSupportedPtr ...Args>
+            template<typename F, CP::IsSupportedPtr ...Args>
                 static auto submit(std::decay_t<F> f, std::decay_t<Args> ...args) {
                 auto promise = std::make_shared<std::promise<void >>();
                 auto wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise]() mutable -> void {
@@ -46,7 +46,7 @@ namespace ThreadPool {
         };
 
     public:
-        template<typename F, IsSupportedPtr ...Args>
+        template<typename F, CP::IsSupportedPtr ...Args>
             auto Submit(F&& f, Args &&...args) {
             auto tuple = SubmitHelper<decltype(f(*args...))>::template submit<F, Args...>(
                 std::forward<F>(f),
