@@ -5,16 +5,15 @@
 #ifndef CPPTHREADPOOL_THREADPOOL_H
 #define CPPTHREADPOOL_THREADPOOL_H
 
-#include <queue>
 #include <functional>
 #include <future>
 #include <tuple>
 #include <MyConcepts.h>
+#include <TaskQueue.h>
 
 namespace ThreadPool {
     class ThreadPool {
-        using Queue_t = std::queue<std::function<void()>>;
-        Queue_t queue_;
+        TaskQueue_t queue_;
 
         template<typename Ret_t>
         struct SubmitHelper {
