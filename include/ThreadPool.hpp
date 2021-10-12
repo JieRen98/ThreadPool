@@ -2,8 +2,8 @@
 // Created by Jie Ren (jieren9806@gmail.com) on 2021/10/10.
 //
 
-#ifndef CPPTHREADPOOL_THREADPOOL_H
-#define CPPTHREADPOOL_THREADPOOL_H
+#ifndef CPPTHREADPOOL_THREADPOOL_HPP
+#define CPPTHREADPOOL_THREADPOOL_HPP
 
 #include <future>
 #include <tuple>
@@ -78,4 +78,4 @@ namespace ThreadPool {
     }
 }
 
-#endif // CPPTHREADPOOL_THREADPOOL_H
+#endif // CPPTHREADPOOL_THREADPOOL_HPP

@@ -2,8 +2,8 @@
 // Created by Jie Ren (jieren9806@gmail.com) on 2021/10/11.
 //
 
-#ifndef CPPTHREADPOOL_MYCONCEPTS_H
-#define CPPTHREADPOOL_MYCONCEPTS_H
+#ifndef CPPTHREADPOOL_MYCONCEPTS_HPP
+#define CPPTHREADPOOL_MYCONCEPTS_HPP
 
 #include <memory.h>
 
@@ -32,4 +32,4 @@ namespace ThreadPool {
     }
 }
 
-#endif // CPPTHREADPOOL_MYCONCEPTS_H
+#endif // CPPTHREADPOOL_MYCONCEPTS_HPP

@@ -2,8 +2,8 @@
 // Created by Jie Ren (jieren9806@gmail.com) on 2021/10/10.
 //
 
-#ifndef CPPTHREADPOOL_TASKQUEUE_H
-#define CPPTHREADPOOL_TASKQUEUE_H
+#ifndef CPPTHREADPOOL_TASKQUEUE_HPP
+#define CPPTHREADPOOL_TASKQUEUE_HPP
 
 #include <Common.h>
 
@@ -31,4 +31,4 @@ namespace ThreadPool {
 	}
 }
 
-#endif // CPPTHREADPOOL_TASKQUEUE_H
+#endif // CPPTHREADPOOL_TASKQUEUE_HPP

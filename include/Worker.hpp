@@ -2,8 +2,8 @@
 // Created by Jie Ren (jieren9806@gmail.com) on 2021/10/11.
 //
 
-#ifndef CPPTHREADPOOL_WORKER_H
-#define CPPTHREADPOOL_WORKER_H
+#ifndef CPPTHREADPOOL_WORKER_HPP
+#define CPPTHREADPOOL_WORKER_HPP
 
 #include <thread>
 #include <vector>
@@ -28,4 +28,4 @@ namespace ThreadPool {
 	}
 }
 
-#endif // CPPTHREADPOOL_WORKER_H
+#endif // CPPTHREADPOOL_WORKER_HPP
