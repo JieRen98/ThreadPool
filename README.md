@@ -11,7 +11,8 @@ The original intention of this project is to learn the new C++20 standard in use
 - [ ] Coroutine supported
 - [ ] (Try) High concurrency support
   - [ ] High concurrency test
-- [ ] (Maybe) Higher performance smart pointer than shared_ptr
+
+[comment]: <> (- [ ] &#40;Maybe&#41; Higher performance smart pointer than shared_ptr)
 
 ## Installation
 - Clone the repo.
