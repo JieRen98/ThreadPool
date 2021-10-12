@@ -32,4 +32,4 @@ namespace ThreadPool {
     }
 }
 
-#endif //CPPTHREADPOOL_MYCONCEPTS_H
+#endif // CPPTHREADPOOL_MYCONCEPTS_H
