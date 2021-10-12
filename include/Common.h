@@ -21,7 +21,11 @@ namespace ThreadPool {
 
         SafeCallee(SafeCallee &&Callee) noexcept : fn_(std::move(Callee.fn_)) {};
 
+        SafeCallee(const SafeCallee &Callee) = delete;
+
         SafeCallee &operator=(SafeCallee &&Callee) noexcept { fn_ = std::move(Callee.fn_); return *this; }
+
+        auto operator=(const SafeCallee &Callee) = delete;
 
         ~SafeCallee() { if (bool(fn_)) fn_(true); }
 
