@@ -15,8 +15,8 @@ namespace ThreadPool {
 	ThreadPool_t::Worker_t::Worker_t(ThreadPool_t* tp) : tp_(tp) {}
 
 	void ThreadPool_t::Worker_t::operator()() noexcept {
-		std::function<void()> fn{ tp_->queue_.pop() };
-		while (!shutdown_flag_) {
+		auto fn = tp_->queue_.pop();
+		while (!tp_->shutdown_flag_) {
             if (bool(fn))
                 fn();
             {
@@ -26,8 +26,6 @@ namespace ThreadPool {
             }
 		}
 	}
-
-    void ThreadPool_t::Worker_t::ShutDown() { shutdown_flag_ = true; }
 }
 
 #endif // CPPTHREADPOOL_WORKER_H

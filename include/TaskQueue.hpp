@@ -17,7 +17,7 @@ namespace ThreadPool {
 	std::function<void()> TaskQueue_t::pop() {
 		std::unique_lock<std::mutex> unique_lock{ mutex_ };
 		if (!queue_.empty()) {
-			std::function<void()>&& task_fn = std::move(queue_.front());
+			std::function<void()> task_fn{ std::move(queue_.front()) };
 			queue_.pop();
 			return task_fn;
 		}

@@ -25,16 +25,14 @@ namespace ThreadPool {
     class ThreadPool_t {
         class Worker_t {
             ThreadPool_t* tp_;
-            bool shutdown_flag_{ false };
 
         public:
             explicit Worker_t(ThreadPool_t* tp);
 
             void operator()() noexcept;
-
-            void ShutDown();
         };
 
+        bool shutdown_flag_{ false };
         std::vector<std::thread> threads_;
         std::condition_variable cv_{};
         std::mutex cv_mutex_{};
@@ -52,6 +50,8 @@ namespace ThreadPool {
         auto Submit(F&& f, Args &&...args);
 
         void start();
+
+        void shutdown();
     };
 }
 

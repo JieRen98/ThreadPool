@@ -58,6 +58,16 @@ namespace ThreadPool {
         for (auto& thread : threads_)
             thread = std::thread{ Worker_t{this} };
     }
+
+    void ThreadPool_t::shutdown() {
+        shutdown_flag_ = true;
+        cv_.notify_all();
+        for (auto& thread : threads_) {
+            while (!thread.joinable())
+                cv_.notify_all();
+            thread.join();
+        }
+    }
 }
 
 #endif // CPPTHREADPOOL_THREADPOOL_H
