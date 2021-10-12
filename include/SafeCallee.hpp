@@ -24,9 +24,14 @@ namespace ThreadPool {
 
         auto operator=(const SafeCallee_t &Callee) = delete;
 
-        ~SafeCallee_t() { if (bool(fn_)) fn_(true); }
+        ~SafeCallee_t() {
+            if (bool(fn_)) {
+                fn_(true);
+                std::cout << "Destructed" << std::endl;
+            }
+        }
 
-        void operator()() { fn_(false); }
+        void operator()() { fn_(false); fn_ = std::function<void(bool)> { nullptr }; }
 
         explicit operator bool() const noexcept { return bool(fn_); }
     };
