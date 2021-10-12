@@ -17,17 +17,16 @@ namespace ThreadPool {
     struct ThreadPool_t::SubmitHelper {
         template<typename F, CP::IsSupportedPtr ...Args>
         static auto call(std::decay_t<F> f, std::decay_t<Args> ...args) {
-            auto promise = std::make_shared<std::promise<Ret_t >>();
-            std::function<void(bool)> wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise](bool destruct) mutable -> void {
-                if (destruct) {
+            auto task_ptr = std::make_shared<std::packaged_task<Ret_t(bool)>>([f = std::move(f), ...args = std::move(args)](bool destruct_only) mutable -> Ret_t {
+                if (!destruct_only) {
+                    auto result = f(*args...);
                     (args.reset(), ...);
-                    promise.reset();
-                } else {
-                    promise->set_value(f(*args...));
-                    (args.reset(), ...);
+                    return result;
                 }
-            };
-            return std::make_tuple(std::move(promise), std::move(wrapped_fn));
+                (args.reset(), ...);
+            });
+            std::function<void(bool)> wrapped_fn{[=](bool destruct_only) { (*task_ptr)(destruct_only); }};
+            return std::make_tuple(std::move(task_ptr), std::move(wrapped_fn));
         }
     };
 
@@ -35,18 +34,13 @@ namespace ThreadPool {
     struct ThreadPool_t::SubmitHelper<void> {
         template<typename F, CP::IsSupportedPtr ...Args>
         static auto call(std::decay_t<F> f, std::decay_t<Args> ...args) {
-            auto promise = std::make_shared<std::promise<void >>();
-            std::function<void(bool)> wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise](bool destruct) mutable -> void {
-                if (destruct) {
-                    (args.reset(), ...);
-                    promise.reset();
-                } else {
+            auto task_ptr = std::make_shared<std::packaged_task<void(bool)>>([f = std::move(f), ...args = std::move(args)](bool destruct_only) mutable -> void {
+                if (!destruct_only)
                     f(*args...);
-                    (args.reset(), ...);
-                    promise->set_value();
-                }
-            };
-            return std::make_tuple(std::move(promise), std::move(wrapped_fn));
+                (args.reset(), ...);
+            });
+            std::function<void(bool)> wrapped_fn{[=](bool destruct_only) { (*task_ptr)(destruct_only); }};
+            return std::make_tuple(std::move(task_ptr), std::move(wrapped_fn));
         }
     };
 
@@ -59,7 +53,7 @@ namespace ThreadPool {
             std::forward<Args>(args)...);
         queue_.push(std::move(std::get<1>(tuple)));
         cv_.notify_one();
-        return std::get<0>(tuple);
+        return std::move(std::get<0>(tuple));
     }
 
     void ThreadPool_t::start() {
