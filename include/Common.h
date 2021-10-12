@@ -25,13 +25,14 @@ namespace ThreadPool {
     class ThreadPool_t {
         class Worker_t {
             ThreadPool_t* tp_;
-            mutable std::mutex mutex_{};
             bool shutdown_flag_{ false };
 
         public:
-            Worker_t(ThreadPool_t* tp);
+            explicit Worker_t(ThreadPool_t* tp);
 
-            void operator()();
+            void operator()() noexcept;
+
+            void ShutDown();
         };
 
         std::vector<std::thread> threads_;
@@ -45,7 +46,7 @@ namespace ThreadPool {
         struct SubmitHelper;
 
     public:
-        ThreadPool_t(const std::size_t world_size);
+        explicit ThreadPool_t(std::size_t world_size);
 
         template<typename F, CP::IsSupportedPtr ...Args>
         auto Submit(F&& f, Args &&...args);

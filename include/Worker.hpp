@@ -12,21 +12,22 @@
 #include <Common.h>
 
 namespace ThreadPool {
-	ThreadPool_t::Worker_t::Worker_t(ThreadPool_t* tp) : tp_(tp) {};
+	ThreadPool_t::Worker_t::Worker_t(ThreadPool_t* tp) : tp_(tp) {}
 
-	void ThreadPool_t::Worker_t::operator()() {
-		std::function<void()> fn;
+	void ThreadPool_t::Worker_t::operator()() noexcept {
+		std::function<void()> fn{ tp_->queue_.pop() };
 		while (!shutdown_flag_) {
-			{
+            if (bool(fn))
+                fn();
+            {
 				std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
-				if (!bool(fn))
-					tp_->cv_.wait(unique_lock);
-				fn = tp_->queue_.pop();
-			}
-			if (!bool(fn))
-				fn();
+                tp_->cv_.wait(unique_lock);
+                fn = tp_->queue_.pop();
+            }
 		}
-	};
-};
+	}
+
+    void ThreadPool_t::Worker_t::ShutDown() { shutdown_flag_ = true; }
+}
 
 #endif // CPPTHREADPOOL_WORKER_H

@@ -42,7 +42,7 @@ namespace ThreadPool {
         }
     };
 
-    ThreadPool_t::ThreadPool_t(const std::size_t world_size) : threads_{ world_size }{};
+    ThreadPool_t::ThreadPool_t(const std::size_t world_size) : threads_{ world_size }{}
 
     template<typename F, CP::IsSupportedPtr ...Args>
     auto ThreadPool_t::Submit(F&& f, Args &&...args) {
@@ -52,7 +52,7 @@ namespace ThreadPool {
         queue_.emplace(std::move(std::get<1>(tuple)));
         cv_.notify_one();
         return std::get<0>(tuple);
-    };
+    }
 
     void ThreadPool_t::start() {
         for (auto& thread : threads_)
