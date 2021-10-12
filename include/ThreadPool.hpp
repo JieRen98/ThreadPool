@@ -57,7 +57,7 @@ namespace ThreadPool {
         auto tuple = SubmitHelper<decltype(f(*args...))>::template call<F, Args...>(
             std::forward<F>(f),
             std::forward<Args>(args)...);
-        queue_.emplace(std::move(std::get<1>(tuple)));
+        queue_.push(std::move(std::get<1>(tuple)));
         cv_.notify_one();
         return std::get<0>(tuple);
     }

@@ -8,25 +8,25 @@
 #include <Common.h>
 
 namespace ThreadPool {
-	auto TaskQueue_t::emplace(std::function<void(bool)>&& fn) {
+	auto TaskQueue_t::push(std::function<void(bool)>&& fn) {
 		std::unique_lock<std::mutex> unique_lock{ mutex_ };
-		return queue_.push(SafeCallee{ std::move(fn) });
+		return queue_.push(SafeCallee_t{std::move(fn) });
 	}
 
-    auto TaskQueue_t::emplace(SafeCallee&& fn) {
+    auto TaskQueue_t::push(SafeCallee_t&& fn) {
         std::unique_lock<std::mutex> unique_lock{ mutex_ };
         return queue_.push(std::move(fn));
     }
 
-    SafeCallee TaskQueue_t::pop() {
+    SafeCallee_t TaskQueue_t::pop() {
 		std::unique_lock<std::mutex> unique_lock{ mutex_ };
 		if (!queue_.empty()) {
-			SafeCallee task_fn{ std::move(queue_.front()) };
+			SafeCallee_t task_fn{std::move(queue_.front()) };
 			queue_.pop();
 			return task_fn;
 		}
 		else {
-			return SafeCallee { std::function<void(bool)>{ nullptr } };
+			return SafeCallee_t {std::function<void(bool)>{nullptr } };
 		}
 	}
 }

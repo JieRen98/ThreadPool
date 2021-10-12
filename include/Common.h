@@ -13,15 +13,15 @@
 
 namespace ThreadPool {
     class TaskQueue_t {
-        std::queue<SafeCallee> queue_;
+        std::queue<SafeCallee_t> queue_;
         mutable std::mutex mutex_;
 
     public:
-        auto emplace(std::function<void(bool)>&& fn);
+        auto push(std::function<void(bool)>&& fn);
 
-        auto emplace(SafeCallee&& fn);
+        auto push(SafeCallee_t&& fn);
 
-        SafeCallee pop();
+        SafeCallee_t pop();
     };
 
     class ThreadPool_t {
