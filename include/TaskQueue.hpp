@@ -18,15 +18,15 @@ namespace ThreadPool {
         return queue_.push(std::move(fn));
     }
 
-    SafeCallee_t TaskQueue_t::pop() {
+    auto TaskQueue_t::pop() {
 		std::unique_lock<std::mutex> unique_lock{ mutex_ };
 		if (!queue_.empty()) {
-			SafeCallee_t task_fn{std::move(queue_.front()) };
+            auto task_fn{ std::move(queue_.front()) };
 			queue_.pop();
 			return task_fn;
 		}
 		else {
-			return SafeCallee_t {std::function<void(bool)>{nullptr } };
+			return SafeCallee_t {std::function<void(bool)>{ nullptr } };
 		}
 	}
 }

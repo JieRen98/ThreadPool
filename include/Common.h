@@ -21,7 +21,7 @@ namespace ThreadPool {
 
         auto push(SafeCallee_t&& fn);
 
-        SafeCallee_t pop();
+        auto pop();
     };
 
     class ThreadPool_t {
