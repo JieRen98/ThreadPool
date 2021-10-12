@@ -11,15 +11,35 @@
 #include <MyConcepts.h>
 
 namespace ThreadPool {
+    class SafeCallee {
+        std::function<void(bool)> fn_;
+
+    public:
+        explicit SafeCallee(std::function<void(bool)> &&fn) : fn_(std::move(fn)) {};
+
+        SafeCallee(const std::function<void(bool)> &fn) = delete;
+
+        SafeCallee(SafeCallee &&Callee) noexcept : fn_(std::move(Callee.fn_)) {};
+
+        SafeCallee &operator=(SafeCallee &&Callee) noexcept { fn_ = std::move(Callee.fn_); return *this; }
+
+        ~SafeCallee() { if (bool(fn_)) fn_(true); }
+
+        void operator()() { fn_(false); }
+
+        explicit operator bool() const noexcept { return bool(fn_); }
+    };
+
     class TaskQueue_t {
-        std::queue<std::function<void()>> queue_;
+        std::queue<SafeCallee> queue_;
         mutable std::mutex mutex_;
 
     public:
-        template<typename Fn_t>
-        auto emplace(Fn_t&& fn);
+        auto emplace(std::function<void(bool)>&& fn);
 
-        std::function<void()> pop();
+        auto emplace(SafeCallee&& fn);
+
+        SafeCallee pop();
     };
 
     class ThreadPool_t {

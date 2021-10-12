@@ -18,10 +18,14 @@ namespace ThreadPool {
         template<typename F, CP::IsSupportedPtr ...Args>
         static auto call(std::decay_t<F> f, std::decay_t<Args> ...args) {
             auto promise = std::make_shared<std::promise<Ret_t >>();
-            auto wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise]() mutable -> void {
-                promise->set_value(f(*args...));
-                (args.reset(), ...);
-                promise.reset();
+            std::function<void(bool)> wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise](bool destruct) mutable -> void {
+                if (destruct) {
+                    (args.reset(), ...);
+                    promise.reset();
+                } else {
+                    promise->set_value(f(*args...));
+                    (args.reset(), ...);
+                }
             };
             return std::make_tuple(std::move(promise), std::move(wrapped_fn));
         }
@@ -32,11 +36,15 @@ namespace ThreadPool {
         template<typename F, CP::IsSupportedPtr ...Args>
         static auto call(std::decay_t<F> f, std::decay_t<Args> ...args) {
             auto promise = std::make_shared<std::promise<void >>();
-            auto wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise]() mutable -> void {
-                f(*args...);
-                promise->set_value();
-                (args.reset(), ...);
-                promise.reset();
+            std::function<void(bool)> wrapped_fn = [f = std::move(f), ...args = std::move(args), promise = promise](bool destruct) mutable -> void {
+                if (destruct) {
+                    (args.reset(), ...);
+                    promise.reset();
+                } else {
+                    f(*args...);
+                    (args.reset(), ...);
+                    promise->set_value();
+                }
             };
             return std::make_tuple(std::move(promise), std::move(wrapped_fn));
         }
