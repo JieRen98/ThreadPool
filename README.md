@@ -114,12 +114,17 @@ cd test
 ```
 result:
 ```
-value address: 0xefb100, start with: 0
-value address: 0xefb100 in run_ref
-value address: 0xefb110 in run_ref_ret_value
-value address: 0x7f44f7b0d7ac in run_cp
+value address: 0x15da110, start with: 0
+value address: 0x15da110 in run_ref
+value address: 0x7f09429e67ac in run_cp
+value address: 0x7f09421e5774 in ret_unique
+value address: 0x15da120 in run_ref_ret_value
+value address: 0x15db1d0 in run_ref_ret_ref
 sptr: 1, use count: 1
+Return of future3: 1
 string from run_ref_ret_value
+run_ref_ret_ref start with value: 1
+run_ref_ret_ref add 1: 2
 ```
 
 #### Explanation
