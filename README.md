@@ -38,26 +38,40 @@ echo "
 #include <ThreadPool.hpp>
 
 void run_ref(int &x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     x++;
     std::cout << "value address: " << &x << " in run_ref" << std::endl;
 }
 
+void run_cp(int x) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    x++;
+    std::cout << "value address: " << &x << " in run_cp" << std::endl;
+}
+
+std::unique_ptr<int> ret_unique(int x) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    x++;
+    std::cout << "value address: " << &x << " in ret_unique" << std::endl;
+    return std::make_unique<int>(x);
+}
+
 std::string run_ref_ret_value(int &x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
     x++;
     std::cout << "value address: " << &x << " in run_ref_ret_value" << std::endl;
     return "string from run_ref_ret_value";
 }
 
-void run_cp(int x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+int &run_ref_ret_ref(int &x) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     x++;
-    std::cout << "value address: " << &x << " in run_cp" << std::endl;
+    std::cout << "value address: " << &x << " in run_ref_ret_ref" << std::endl;
+    return x;
 }
 
 int main() {
-    ThreadPool::ThreadPool_t tp{ 3 };
+    ThreadPool::ThreadPool_t tp{5};
     auto sptr = std::make_shared<int>(0);
     auto uptr = std::make_unique<int>(0);
     std::cout << "value address: " << sptr.get() << ", start with: " << *sptr << std::endl;
@@ -65,11 +79,23 @@ int main() {
 
     auto future1 = tp.Submit(run_ref, sptr)->get_future();
     auto future2 = tp.Submit(run_cp, sptr)->get_future();
-    auto future3 = tp.Submit(run_ref_ret_value, std::move(uptr))->get_future();
+    auto future3 = tp.Submit(ret_unique, sptr)->get_future();
+    auto future4 = tp.Submit(run_ref_ret_value, std::move(uptr))->get_future();
+    auto sptr5 = std::make_shared<int>(0);
+    auto future5 = tp.Submit(run_ref_ret_ref, sptr5)->get_future();
     future1.wait();
     future2.wait();
+    future3.wait();
+    future4.wait();
+    future5.wait();
     std::cout << "sptr: " << *sptr << ", use count: " << sptr.use_count() << std::endl;
-    std::cout << future3.get() << std::endl;
+    auto result3 = std::move(future3.get());
+    std::cout << "Return of future3: " << *result3 << std::endl;
+    std::cout << future4.get() << std::endl;
+    auto &future5_value = future5.get();
+    std::cout << "run_ref_ret_ref start with value: " << *sptr5 << std::endl;
+    future5_value++;
+    std::cout << "run_ref_ret_ref add 1: " << *sptr5 << std::endl;
     tp.shutdown();
 }
 " > test/test.cpp
@@ -103,26 +129,40 @@ The test code as following:
 #include <ThreadPool.hpp>
 
 void run_ref(int &x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     x++;
     std::cout << "value address: " << &x << " in run_ref" << std::endl;
 }
 
+void run_cp(int x) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    x++;
+    std::cout << "value address: " << &x << " in run_cp" << std::endl;
+}
+
+std::unique_ptr<int> ret_unique(int x) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    x++;
+    std::cout << "value address: " << &x << " in ret_unique" << std::endl;
+    return std::make_unique<int>(x);
+}
+
 std::string run_ref_ret_value(int &x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
     x++;
     std::cout << "value address: " << &x << " in run_ref_ret_value" << std::endl;
     return "string from run_ref_ret_value";
 }
 
-void run_cp(int x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+int &run_ref_ret_ref(int &x) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     x++;
-    std::cout << "value address: " << &x << " in run_cp" << std::endl;
+    std::cout << "value address: " << &x << " in run_ref_ret_ref" << std::endl;
+    return x;
 }
 
 int main() {
-    ThreadPool::ThreadPool_t tp{3   };
+    ThreadPool::ThreadPool_t tp{5};
     auto sptr = std::make_shared<int>(0);
     auto uptr = std::make_unique<int>(0);
     std::cout << "value address: " << sptr.get() << ", start with: " << *sptr << std::endl;
@@ -130,11 +170,23 @@ int main() {
 
     auto future1 = tp.Submit(run_ref, sptr)->get_future();
     auto future2 = tp.Submit(run_cp, sptr)->get_future();
-    auto future3 = tp.Submit(run_ref_ret_value, std::move(uptr))->get_future();
+    auto future3 = tp.Submit(ret_unique, sptr)->get_future();
+    auto future4 = tp.Submit(run_ref_ret_value, std::move(uptr))->get_future();
+    auto sptr5 = std::make_shared<int>(0);
+    auto future5 = tp.Submit(run_ref_ret_ref, sptr5)->get_future();
     future1.wait();
     future2.wait();
+    future3.wait();
+    future4.wait();
+    future5.wait();
     std::cout << "sptr: " << *sptr << ", use count: " << sptr.use_count() << std::endl;
-    std::cout << future3.get() << std::endl;
+    auto result3 = std::move(future3.get());
+    std::cout << "Return of future3: " << *result3 << std::endl;
+    std::cout << future4.get() << std::endl;
+    auto &future5_value = future5.get();
+    std::cout << "run_ref_ret_ref start with value: " << *sptr5 << std::endl;
+    future5_value++;
+    std::cout << "run_ref_ret_ref add 1: " << *sptr5 << std::endl;
     tp.shutdown();
 }
 ```
