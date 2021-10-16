@@ -7,6 +7,7 @@ The original intention of this project is to learn the new C++20 standard in use
   - [x] Solve memory leaking of shared_ptr + lambda
 - [x] New function wrapper that supports move semantics
 - [x] Locked task queue
+  - [x] Add dispatcher struct
 - [ ] Unlocked task queue
 - [ ] Coroutine supported
 - [ ] (Try) High concurrency support
