@@ -29,6 +29,8 @@ namespace ThreadPool {
 			return SafeCallee_t {std::function<void(bool)>{ nullptr } };
 		}
 	}
+
+    bool TaskQueue_t::empty() const { return queue_.empty(); }
 }
 
 #endif // CPPTHREADPOOL_TASKQUEUE_HPP

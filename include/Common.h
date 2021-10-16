@@ -22,6 +22,8 @@ namespace ThreadPool {
         auto push(SafeCallee_t&& fn);
 
         auto pop();
+
+        bool empty() const;
     };
 
     class ThreadPool_t {
@@ -36,6 +38,7 @@ namespace ThreadPool {
 
         bool shutdown_flag_{ false };
         std::vector<std::thread> threads_;
+        std::thread dispatcher_thread_;
         std::condition_variable cv_{};
         std::mutex cv_mutex_{};
         TaskQueue_t queue_{};
@@ -44,6 +47,14 @@ namespace ThreadPool {
 
         template<typename Ret_t>
         struct SubmitHelper;
+
+        struct Dispatcher {
+            ThreadPool_t *tp_;
+
+            Dispatcher(ThreadPool_t *tp);
+
+            void operator()() const;
+        };
 
     public:
         explicit ThreadPool_t(std::size_t world_size);

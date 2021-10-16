@@ -12,6 +12,8 @@
 #include <TaskQueue.hpp>
 #include <Worker.hpp>
 
+#define SLEEP_MS_IF_EMPTY 100
+
 namespace ThreadPool {
     template<typename Ret_t>
     struct ThreadPool_t::SubmitHelper {
@@ -49,7 +51,18 @@ namespace ThreadPool {
         }
     };
 
-    ThreadPool_t::ThreadPool_t(const std::size_t world_size) : threads_{ world_size }{}
+    ThreadPool_t::Dispatcher::Dispatcher(ThreadPool_t *tp) : tp_(tp) {};
+
+    void ThreadPool_t::Dispatcher::operator()() const {
+        while (!tp_->shutdown_flag_) {
+            if (!tp_->queue_.empty())
+                tp_->cv_.notify_one();
+            else
+                std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_MS_IF_EMPTY));
+        }
+    }
+
+    ThreadPool_t::ThreadPool_t(const std::size_t world_size) : threads_{ world_size } {}
 
     template<typename F, CP::IsSupportedPtr ...Args>
     auto ThreadPool_t::Submit(F&& f, Args &&...args) {
@@ -57,13 +70,13 @@ namespace ThreadPool {
             std::forward<F>(f),
             std::forward<Args>(args)...);
         queue_.push(std::move(std::get<1>(tuple)));
-        cv_.notify_one();
         return std::move(std::get<0>(tuple));
     }
 
     void ThreadPool_t::start() {
         for (auto& thread : threads_)
             thread = std::thread{ Worker_t{this} };
+        dispatcher_thread_ = std::thread(Dispatcher(this));
     }
 
     void ThreadPool_t::shutdown() {
@@ -74,7 +87,10 @@ namespace ThreadPool {
                 cv_.notify_all();
             thread.join();
         }
+        while (!dispatcher_thread_.joinable());
+        dispatcher_thread_.join();
     }
 }
 
+#undef SLEEP_MS_IF_EMPTY
 #endif // CPPTHREADPOOL_THREADPOOL_HPP
