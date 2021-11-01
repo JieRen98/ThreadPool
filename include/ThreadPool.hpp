@@ -51,7 +51,7 @@ namespace ThreadPool {
         }
     };
 
-    ThreadPool_t::Dispatcher::Dispatcher(ThreadPool_t *tp) : tp_(tp) {};
+    ThreadPool_t::Dispatcher::Dispatcher(ThreadPool_t *tp) : tp_(tp) {}
 
     void ThreadPool_t::Dispatcher::operator()() const {
         while (!tp_->shutdown_flag_) {
