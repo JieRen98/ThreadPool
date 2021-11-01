@@ -5,27 +5,27 @@
 #ifndef CPPTHREADPOOL_WORKER_HPP
 #define CPPTHREADPOOL_WORKER_HPP
 
-#include <thread>
-#include <vector>
+#include <Common.h>
 #include <condition_variable>
 #include <functional>
-#include <Common.h>
+#include <thread>
+#include <vector>
 
 namespace ThreadPool {
-	ThreadPool_t::Worker_t::Worker_t(ThreadPool_t* tp) : tp_(tp) {}
+ThreadPool_t::Worker_t::Worker_t(ThreadPool_t *tp) : tp_(tp) {}
 
-	void ThreadPool_t::Worker_t::operator()() noexcept {
-		auto fn = tp_->queue_.pop();
-		while (!tp_->shutdown_flag_) {
-            if (bool(fn))
-                fn();
-            {
-				std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
-                tp_->cv_.wait(unique_lock);
-                fn = tp_->queue_.pop();
-            }
-		}
-	}
+void ThreadPool_t::Worker_t::operator()() noexcept {
+  auto fn = tp_->queue_.pop();
+  while (!tp_->shutdown_flag_) {
+    if (bool(fn))
+      fn();
+    {
+      std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
+      tp_->cv_.wait(unique_lock);
+      fn = tp_->queue_.pop();
+    }
+  }
 }
+} // namespace ThreadPool
 
 #endif // CPPTHREADPOOL_WORKER_HPP

@@ -5,67 +5,68 @@
 #ifndef CPPTHREADPOOL_COMMON_H
 #define CPPTHREADPOOL_COMMON_H
 
-#include <mutex>
-#include <queue>
-#include <functional>
 #include <MyConcepts.h>
 #include <SafeCallee.hpp>
+#include <condition_variable>
+#include <functional>
+#include <mutex>
+#include <queue>
+#include <thread>
 
 namespace ThreadPool {
-    class TaskQueue_t {
-        std::queue<SafeCallee_t> queue_;
-        mutable std::mutex mutex_;
+class TaskQueue_t {
+  std::queue<SafeCallee_t> queue_;
+  mutable std::mutex mutex_;
 
-    public:
-        auto push(std::function<void(bool)>&& fn);
+public:
+  auto push(std::function<void(bool)> &&fn);
 
-        auto push(SafeCallee_t&& fn);
+  auto push(SafeCallee_t &&fn);
 
-        auto pop();
+  auto pop();
 
-        bool empty() const;
-    };
+  bool empty() const;
+};
 
-    class ThreadPool_t {
-        class Worker_t {
-            ThreadPool_t* tp_;
+class ThreadPool_t {
+  class Worker_t {
+    ThreadPool_t *tp_;
 
-        public:
-            explicit Worker_t(ThreadPool_t* tp);
+  public:
+    explicit Worker_t(ThreadPool_t *tp);
 
-            void operator()() noexcept;
-        };
+    void operator()() noexcept;
+  };
 
-        bool shutdown_flag_{ false };
-        std::vector<std::thread> threads_;
-        std::thread dispatcher_thread_;
-        std::condition_variable cv_{};
-        std::mutex cv_mutex_{};
-        TaskQueue_t queue_{};
+  bool shutdown_flag_{false};
+  std::vector<std::thread> threads_;
+  std::thread dispatcher_thread_;
+  std::condition_variable cv_{};
+  std::mutex cv_mutex_{};
+  TaskQueue_t queue_{};
 
-        friend Worker_t;
+  friend Worker_t;
 
-        template<typename Ret_t>
-        struct SubmitHelper;
+  template <typename Ret_t> struct SubmitHelper;
 
-        struct Dispatcher {
-            ThreadPool_t *tp_;
+  struct Dispatcher {
+    ThreadPool_t *tp_;
 
-            Dispatcher(ThreadPool_t *tp);
+    explicit Dispatcher(ThreadPool_t *tp);
 
-            void operator()() const;
-        };
+    void operator()() const;
+  };
 
-    public:
-        explicit ThreadPool_t(std::size_t world_size);
+public:
+  explicit ThreadPool_t(std::size_t world_size);
 
-        template<typename F, CP::IsSupportedPtr ...Args>
-        auto Submit(F&& f, Args &&...args);
+  template <typename F, CP::IsSupportedPtr... Args>
+  auto Submit(F &&f, Args &&...args);
 
-        void start();
+  void start();
 
-        void shutdown();
-    };
-}
+  void shutdown();
+};
+} // namespace ThreadPool
 
 #endif // CPPTHREADPOOL_COMMON_H

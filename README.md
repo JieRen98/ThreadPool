@@ -1,36 +1,47 @@
 # CppThreadPool
+
 ## Introduction
-The original intention of this project is to learn the new C++20 standard in use. Therefore, make sure your compiler supports C++20 or later standards.
+
+The original intention of this project is to learn the new C++20 standard in use. Therefore, make sure your compiler
+supports C++20 or later standards.
 
 **TODO :**
+
 - [x] Smart pointer as parameter
-  - [x] Solve memory leaking of shared_ptr + lambda
+    - [x] Solve memory leaking of shared_ptr + lambda
 - [x] New function wrapper that supports move semantics
 - [x] Locked task queue
-  - [x] Add dispatcher struct
+    - [x] Add dispatcher struct
 - [ ] Unlocked task queue
 - [ ] Coroutine supported
 - [ ] (Try) High concurrency support
-  - [ ] High concurrency test
+    - [ ] High concurrency test
 
 [comment]: <> (- [ ] &#40;Maybe&#41; Higher performance smart pointer than shared_ptr)
 
 ## Installation
+
 - Clone the repo.
+
 ```shell
 git clone https://github.com/JieRen98/CppThreadPool.git
 cd CppThreadPool
 ```
+
 - Include the directory in your project.
+
 ```cmake
 # ...
 include_directories("path/to/the/dir/CppThreadPool")
 # ...
 ```
+
 - Enjoy.
 
 ### Example
+
 #### Compile test program
+
 ```shell
 mkdir test
 
@@ -109,11 +120,14 @@ cmake .. && make
 ```
 
 #### Run the program
+
 ```shell
 cd test
 ./test
 ```
+
 result:
+
 ```
 value address: 0x15da110, start with: 0
 value address: 0x15da110 in run_ref
@@ -129,7 +143,9 @@ run_ref_ret_ref add 1: 2
 ```
 
 #### Explanation
+
 The test code as following:
+
 ```c++
 #include <iostream>
 #include <ThreadPool.hpp>
@@ -197,7 +213,9 @@ int main() {
 }
 ```
 
-As we can see, we support unique_ptr and shared_ptr. Notably, we should use `std::move` to transfer the control of the unique_ptr.
+As we can see, we support unique_ptr and shared_ptr. Notably, we should use `std::move` to transfer the control of the
+unique_ptr.
 
-At the same time, thanks to the pointer setting, we can easily use lvalue reference in our submitted function.
-Several existing thread pools have difficulty in passing reference. Some require users to pass reference by using `std::ref` that will cause some problems in type deduction.
+At the same time, thanks to the pointer setting, we can easily use lvalue reference in our submitted function. Several
+existing thread pools have difficulty in passing reference. Some require users to pass reference by using `std::ref`
+that will cause some problems in type deduction.
