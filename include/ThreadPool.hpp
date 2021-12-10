@@ -90,12 +90,8 @@ void ThreadPool_t::shutdown() {
   shutdown_flag_ = true;
   cv_.notify_all();
   for (auto &thread : threads_) {
-    while (!thread.joinable())
-      cv_.notify_all();
     thread.join();
   }
-  while (!dispatcher_thread_.joinable())
-    ;
   dispatcher_thread_.join();
 }
 } // namespace ThreadPool
