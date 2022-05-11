@@ -10,22 +10,22 @@
 namespace ThreadPool::CP {
 template <typename T>
 struct IsSharedPtrHelper {
-  constexpr static const bool value = false;
+  constexpr static bool value = false;
 };
 
 template <typename Value_t>
 struct IsSharedPtrHelper<std::shared_ptr<Value_t>> {
-  constexpr static const bool value = true;
+  constexpr static bool value = true;
 };
 
 template <typename T>
 struct IsUniquePtrHelper {
-  constexpr static const bool value = false;
+  constexpr static bool value = false;
 };
 
 template <typename Value_t, typename T_Deleter_t>
 struct IsUniquePtrHelper<std::unique_ptr<Value_t, T_Deleter_t>> {
-  constexpr static const bool value = true;
+  constexpr static bool value = true;
 };
 
 template <typename T>
