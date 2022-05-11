@@ -15,7 +15,7 @@ namespace ThreadPool {
 ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
 
 void ThreadPool::Worker::operator()() noexcept {
-  std::function<void ()> &&fn = tp_->queue_.pop();
+  std::function<void ()> &&fn = tp_->queue_.popSafe();
   while (!tp_->shutdown_flag_) {
     if (bool(fn)) {
       fn();
@@ -24,7 +24,7 @@ void ThreadPool::Worker::operator()() noexcept {
     {
       std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
       tp_->cv_.wait(unique_lock);
-      fn = tp_->queue_.empty() ? nullptr : tp_->queue_.pop();
+      fn = tp_->queue_.popSafe();
     }
   }
 }

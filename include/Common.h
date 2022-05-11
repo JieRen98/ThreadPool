@@ -20,7 +20,7 @@ class TaskQueue {
 public:
   auto push(std::function<void()> &&fn);
 
-  auto pop();
+  std::function<void ()> popSafe();
 
   bool empty() const;
 };

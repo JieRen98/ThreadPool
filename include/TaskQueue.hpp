@@ -13,14 +13,14 @@ auto TaskQueue::push(std::function<void()> &&fn) {
   return queue_.push(std::move(fn));
 }
 
-auto TaskQueue::pop() {
+std::function<void ()> TaskQueue::popSafe() {
   std::unique_lock<std::mutex> unique_lock{mutex_};
   if (!queue_.empty()) {
-    auto task_fn{std::move(queue_.front())};
+    std::function<void ()> task_fn{std::move(queue_.front())};
     queue_.pop();
     return task_fn;
   } else {
-    throw std::runtime_error("pop an empty queue");
+    return std::function<void ()>{nullptr};
   }
 }
 
