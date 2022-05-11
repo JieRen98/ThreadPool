@@ -7,10 +7,7 @@
 
 #include <Common.h>
 
-#include <condition_variable>
 #include <functional>
-#include <thread>
-#include <vector>
 
 namespace ThreadPool {
 ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
