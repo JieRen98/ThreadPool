@@ -12,17 +12,19 @@
 #include <vector>
 
 namespace ThreadPool {
-ThreadPool_t::Worker_t::Worker_t(ThreadPool_t *tp) : tp_(tp) {}
+ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
 
-void ThreadPool_t::Worker_t::operator()() noexcept {
-  auto fn = tp_->queue_.pop();
+void ThreadPool::Worker::operator()() noexcept {
+  std::function<void ()> &&fn = tp_->queue_.pop();
   while (!tp_->shutdown_flag_) {
-    if (bool(fn))
+    if (bool(fn)) {
       fn();
+      fn = nullptr;
+    }
     {
       std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
       tp_->cv_.wait(unique_lock);
-      fn = tp_->queue_.pop();
+      fn = tp_->queue_.empty() ? nullptr : tp_->queue_.pop();
     }
   }
 }

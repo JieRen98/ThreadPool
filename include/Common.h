@@ -6,7 +6,6 @@
 #define CPPTHREADPOOL_COMMON_H
 
 #include <MyConcepts.h>
-#include <SafeCallee.hpp>
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -14,26 +13,24 @@
 #include <thread>
 
 namespace ThreadPool {
-class TaskQueue_t {
-  std::queue<SafeCallee_t> queue_;
+class TaskQueue {
+  std::queue<std::function<void()>> queue_;
   mutable std::mutex mutex_;
 
 public:
-  auto push(std::function<void(bool)> &&fn);
-
-  auto push(SafeCallee_t &&fn);
+  auto push(std::function<void()> &&fn);
 
   auto pop();
 
   bool empty() const;
 };
 
-class ThreadPool_t {
-  class Worker_t {
-    ThreadPool_t *tp_;
+class ThreadPool {
+  class Worker {
+    ThreadPool *tp_;
 
   public:
-    explicit Worker_t(ThreadPool_t *tp);
+    explicit Worker(ThreadPool *tp);
 
     void operator()() noexcept;
   };
@@ -43,25 +40,25 @@ class ThreadPool_t {
   std::thread dispatcher_thread_;
   std::condition_variable cv_{};
   std::mutex cv_mutex_{};
-  TaskQueue_t queue_{};
+  TaskQueue queue_{};
 
-  friend Worker_t;
+  friend Worker;
 
   template <typename Ret_t> struct SubmitHelper;
 
   struct Dispatcher {
-    ThreadPool_t *tp_;
+    ThreadPool *tp_;
 
-    explicit Dispatcher(ThreadPool_t *tp);
+    explicit Dispatcher(ThreadPool *tp);
 
     void operator()() const;
   };
 
 public:
-  explicit ThreadPool_t(std::size_t world_size);
+  explicit ThreadPool(std::size_t world_size);
 
   template <typename F, CP::IsSupportedPtr... Args>
-  auto Submit(F &&f, Args &&...args);
+  auto submit(F &&f, Args &&...args);
 
   void start();
 

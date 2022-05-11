@@ -83,18 +83,18 @@ int &run_ref_ret_ref(int &x) {
 }
 
 int main() {
-    ThreadPool::ThreadPool_t tp{5};
+    ThreadPool::ThreadPool tp{5};
     auto sptr = std::make_shared<int>(0);
     auto uptr = std::make_unique<int>(0);
     std::cout << "value address: " << sptr.get() << ", start with: " << *sptr << std::endl;
     tp.start();
 
-    auto future1 = tp.Submit(run_ref, sptr)->get_future();
-    auto future2 = tp.Submit(run_cp, sptr)->get_future();
-    auto future3 = tp.Submit(ret_unique, sptr)->get_future();
-    auto future4 = tp.Submit(run_ref_ret_value, std::move(uptr))->get_future();
+    auto future1 = tp.submit(run_ref, sptr)->get_future();
+    auto future2 = tp.submit(run_cp, sptr)->get_future();
+    auto future3 = tp.submit(ret_unique, sptr)->get_future();
+    auto future4 = tp.submit(run_ref_ret_value, std::move(uptr))->get_future();
     auto sptr5 = std::make_shared<int>(0);
-    auto future5 = tp.Submit(run_ref_ret_ref, sptr5)->get_future();
+    auto future5 = tp.submit(run_ref_ret_ref, sptr5)->get_future();
     future1.wait();
     future2.wait();
     future3.wait();
@@ -112,7 +112,7 @@ int main() {
 }
 " > test/test.cpp
 
-echo "add_executable(test test.cpp)" > test/CmakeList.txt
+echo "add_executable(test test.cpp)" > test/CMakeLists.txt
 
 mkdir build && cd build
 
@@ -184,18 +184,18 @@ int &run_ref_ret_ref(int &x) {
 }
 
 int main() {
-    ThreadPool::ThreadPool_t tp{5};
+    ThreadPool::ThreadPool tp{5};
     auto sptr = std::make_shared<int>(0);
     auto uptr = std::make_unique<int>(0);
     std::cout << "value address: " << sptr.get() << ", start with: " << *sptr << std::endl;
     tp.start();
 
-    auto future1 = tp.Submit(run_ref, sptr)->get_future();
-    auto future2 = tp.Submit(run_cp, sptr)->get_future();
-    auto future3 = tp.Submit(ret_unique, sptr)->get_future();
-    auto future4 = tp.Submit(run_ref_ret_value, std::move(uptr))->get_future();
+    auto future1 = tp.submit(run_ref, sptr)->get_future();
+    auto future2 = tp.submit(run_cp, sptr)->get_future();
+    auto future3 = tp.submit(ret_unique, sptr)->get_future();
+    auto future4 = tp.submit(run_ref_ret_value, std::move(uptr))->get_future();
     auto sptr5 = std::make_shared<int>(0);
-    auto future5 = tp.Submit(run_ref_ret_ref, sptr5)->get_future();
+    auto future5 = tp.submit(run_ref_ret_ref, sptr5)->get_future();
     future1.wait();
     future2.wait();
     future3.wait();

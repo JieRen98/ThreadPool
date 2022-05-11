@@ -15,52 +15,43 @@
 #define SLEEP_MS_IF_EMPTY 100
 
 namespace ThreadPool {
-template <typename Ret_t> struct ThreadPool_t::SubmitHelper {
+template <typename Ret_t> struct ThreadPool::SubmitHelper {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
     auto promise = std::make_shared<std::promise<Ret_t>>();
-    auto task_ptr = std::make_shared<std::packaged_task<void(bool)>>(
-        [f = std::move(f), ... args = std::move(args),
-         promise = promise](bool destruct_only) mutable -> void {
-          if (!destruct_only)
+    auto task_ptr = std::make_shared<std::packaged_task<void()>>(
+        [f = std::move(f), ... args = std::move(args), promise = promise]() -> void {
             promise->set_value(f(*args...));
-          else
-            promise.reset();
-          (args.reset(), ...);
         });
-    std::function<void(bool)> wrapped_fn{
-        [task_ptr = std::move(task_ptr)](bool destruct_only) {
-          (*task_ptr)(destruct_only);
+    std::function<void()> wrapped_fn{
+        [task_ptr = std::move(task_ptr)]() {
+          (*task_ptr)();
         }};
     return std::make_tuple(std::move(promise), std::move(wrapped_fn));
   }
 };
 
-template <> struct ThreadPool_t::SubmitHelper<void> {
+template <> struct ThreadPool::SubmitHelper<void> {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
     auto promise = std::make_shared<std::promise<void>>();
-    auto task_ptr = std::make_shared<std::packaged_task<void(bool)>>(
+    auto task_ptr = std::make_shared<std::packaged_task<void()>>(
         [f = std::move(f), ... args = std::move(args),
-         promise = promise](bool destruct_only) mutable -> void {
-          if (!destruct_only) {
+         promise = promise]() -> void {
             f(*args...);
             promise->set_value();
-          } else
-            promise.reset();
-          (args.reset(), ...);
         });
-    std::function<void(bool)> wrapped_fn{
-        [task_ptr = std::move(task_ptr)](bool destruct_only) {
-          (*task_ptr)(destruct_only);
+    std::function<void()> wrapped_fn{
+        [task_ptr = std::move(task_ptr)]() {
+          (*task_ptr)();
         }};
     return std::make_tuple(std::move(promise), std::move(wrapped_fn));
   }
 };
 
-ThreadPool_t::Dispatcher::Dispatcher(ThreadPool_t *tp) : tp_(tp) {}
+ThreadPool::Dispatcher::Dispatcher(ThreadPool *tp) : tp_(tp) {}
 
-void ThreadPool_t::Dispatcher::operator()() const {
+void ThreadPool::Dispatcher::operator()() const {
   while (!tp_->shutdown_flag_) {
     if (!tp_->queue_.empty())
       tp_->cv_.notify_one();
@@ -69,24 +60,24 @@ void ThreadPool_t::Dispatcher::operator()() const {
   }
 }
 
-ThreadPool_t::ThreadPool_t(const std::size_t world_size)
+ThreadPool::ThreadPool(const std::size_t world_size)
     : threads_{world_size} {}
 
 template <typename F, CP::IsSupportedPtr... Args>
-auto ThreadPool_t::Submit(F &&f, Args &&...args) {
+auto ThreadPool::submit(F &&f, Args &&...args) {
   auto tuple = SubmitHelper<decltype(f(*args...))>::template call<F, Args...>(
       std::forward<F>(f), std::forward<Args>(args)...);
   queue_.push(std::move(std::get<1>(tuple)));
   return std::move(std::get<0>(tuple));
 }
 
-void ThreadPool_t::start() {
+void ThreadPool::start() {
   for (auto &thread : threads_)
-    thread = std::thread{Worker_t{this}};
+    thread = std::thread{Worker{this}};
   dispatcher_thread_ = std::thread(Dispatcher(this));
 }
 
-void ThreadPool_t::shutdown() {
+void ThreadPool::shutdown() {
   shutdown_flag_ = true;
   cv_.notify_all();
   for (auto &thread : threads_) {
