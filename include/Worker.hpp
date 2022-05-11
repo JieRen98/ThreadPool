@@ -6,6 +6,7 @@
 #define CPPTHREADPOOL_WORKER_HPP
 
 #include <Common.h>
+
 #include <condition_variable>
 #include <functional>
 #include <thread>
@@ -15,7 +16,7 @@ namespace ThreadPool {
 ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
 
 void ThreadPool::Worker::operator()() noexcept {
-  std::function<void ()> &&fn = tp_->queue_.popSafe();
+  std::function<void()> &&fn = tp_->queue_.popSafe();
   while (!tp_->shutdown_flag_) {
     if (bool(fn)) {
       fn();
@@ -28,6 +29,6 @@ void ThreadPool::Worker::operator()() noexcept {
     }
   }
 }
-} // namespace ThreadPool
+}  // namespace ThreadPool
 
-#endif // CPPTHREADPOOL_WORKER_HPP
+#endif  // CPPTHREADPOOL_WORKER_HPP

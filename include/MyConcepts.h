@@ -8,15 +8,18 @@
 #include <memory>
 
 namespace ThreadPool::CP {
-template <typename T> struct IsSharedPtrHelper {
+template <typename T>
+struct IsSharedPtrHelper {
   constexpr static const bool value = false;
 };
 
-template <typename Value_t> struct IsSharedPtrHelper<std::shared_ptr<Value_t>> {
+template <typename Value_t>
+struct IsSharedPtrHelper<std::shared_ptr<Value_t>> {
   constexpr static const bool value = true;
 };
 
-template <typename T> struct IsUniquePtrHelper {
+template <typename T>
+struct IsUniquePtrHelper {
   constexpr static const bool value = false;
 };
 
@@ -33,6 +36,6 @@ concept IsUniquePtr = IsUniquePtrHelper<std::decay_t<T>>::value;
 
 template <typename T>
 concept IsSupportedPtr = IsSharedPtr<T> || IsUniquePtr<T>;
-} // namespace ThreadPool::CP
+}  // namespace ThreadPool::CP
 
-#endif // CPPTHREADPOOL_MYCONCEPTS_HPP
+#endif  // CPPTHREADPOOL_MYCONCEPTS_HPP

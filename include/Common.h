@@ -6,6 +6,7 @@
 #define CPPTHREADPOOL_COMMON_H
 
 #include <MyConcepts.h>
+
 #include <condition_variable>
 #include <functional>
 #include <mutex>
@@ -17,10 +18,10 @@ class TaskQueue {
   std::queue<std::function<void()>> queue_;
   mutable std::mutex mutex_;
 
-public:
+ public:
   auto push(std::function<void()> &&fn);
 
-  std::function<void ()> popSafe();
+  std::function<void()> popSafe();
 
   bool empty() const;
 };
@@ -29,7 +30,7 @@ class ThreadPool {
   class Worker {
     ThreadPool *tp_;
 
-  public:
+   public:
     explicit Worker(ThreadPool *tp);
 
     void operator()() noexcept;
@@ -44,7 +45,8 @@ class ThreadPool {
 
   friend Worker;
 
-  template <typename Ret_t> struct SubmitHelper;
+  template <typename Ret_t>
+  struct SubmitHelper;
 
   struct Dispatcher {
     ThreadPool *tp_;
@@ -54,7 +56,7 @@ class ThreadPool {
     void operator()() const;
   };
 
-public:
+ public:
   explicit ThreadPool(std::size_t world_size);
 
   template <typename F, CP::IsSupportedPtr... Args>
@@ -64,6 +66,6 @@ public:
 
   void shutdown();
 };
-} // namespace ThreadPool
+}  // namespace ThreadPool
 
-#endif // CPPTHREADPOOL_COMMON_H
+#endif  // CPPTHREADPOOL_COMMON_H

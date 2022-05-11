@@ -7,6 +7,7 @@
 
 #include <Common.h>
 #include <MyConcepts.h>
+
 #include <TaskQueue.hpp>
 #include <Worker.hpp>
 #include <future>
@@ -15,36 +16,33 @@
 #define SLEEP_MS_IF_EMPTY 100
 
 namespace ThreadPool {
-template <typename Ret_t> struct ThreadPool::SubmitHelper {
+template <typename Ret_t>
+struct ThreadPool::SubmitHelper {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
     auto promise = std::make_shared<std::promise<Ret_t>>();
     auto task_ptr = std::make_shared<std::packaged_task<void()>>(
-        [f = std::move(f), ... args = std::move(args), promise = promise]() -> void {
-            promise->set_value(f(*args...));
-        });
+        [f = std::move(f), ... args = std::move(args),
+         promise = promise]() -> void { promise->set_value(f(*args...)); });
     std::function<void()> wrapped_fn{
-        [task_ptr = std::move(task_ptr)]() {
-          (*task_ptr)();
-        }};
+        [task_ptr = std::move(task_ptr)]() { (*task_ptr)(); }};
     return std::make_tuple(std::move(promise), std::move(wrapped_fn));
   }
 };
 
-template <> struct ThreadPool::SubmitHelper<void> {
+template <>
+struct ThreadPool::SubmitHelper<void> {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
     auto promise = std::make_shared<std::promise<void>>();
     auto task_ptr = std::make_shared<std::packaged_task<void()>>(
         [f = std::move(f), ... args = std::move(args),
          promise = promise]() -> void {
-            f(*args...);
-            promise->set_value();
+          f(*args...);
+          promise->set_value();
         });
     std::function<void()> wrapped_fn{
-        [task_ptr = std::move(task_ptr)]() {
-          (*task_ptr)();
-        }};
+        [task_ptr = std::move(task_ptr)]() { (*task_ptr)(); }};
     return std::make_tuple(std::move(promise), std::move(wrapped_fn));
   }
 };
@@ -60,8 +58,7 @@ void ThreadPool::Dispatcher::operator()() const {
   }
 }
 
-ThreadPool::ThreadPool(const std::size_t world_size)
-    : threads_{world_size} {}
+ThreadPool::ThreadPool(const std::size_t world_size) : threads_{world_size} {}
 
 template <typename F, CP::IsSupportedPtr... Args>
 auto ThreadPool::submit(F &&f, Args &&...args) {
@@ -72,8 +69,7 @@ auto ThreadPool::submit(F &&f, Args &&...args) {
 }
 
 void ThreadPool::start() {
-  for (auto &thread : threads_)
-    thread = std::thread{Worker{this}};
+  for (auto &thread : threads_) thread = std::thread{Worker{this}};
   dispatcher_thread_ = std::thread(Dispatcher(this));
 }
 
@@ -85,7 +81,7 @@ void ThreadPool::shutdown() {
   }
   dispatcher_thread_.join();
 }
-} // namespace ThreadPool
+}  // namespace ThreadPool
 
 #undef SLEEP_MS_IF_EMPTY
-#endif // CPPTHREADPOOL_THREADPOOL_HPP
+#endif  // CPPTHREADPOOL_THREADPOOL_HPP

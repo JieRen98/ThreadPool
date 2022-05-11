@@ -13,18 +13,18 @@ auto TaskQueue::push(std::function<void()> &&fn) {
   return queue_.push(std::move(fn));
 }
 
-std::function<void ()> TaskQueue::popSafe() {
+std::function<void()> TaskQueue::popSafe() {
   std::unique_lock<std::mutex> unique_lock{mutex_};
   if (!queue_.empty()) {
-    std::function<void ()> task_fn{std::move(queue_.front())};
+    std::function<void()> task_fn{std::move(queue_.front())};
     queue_.pop();
     return task_fn;
   } else {
-    return std::function<void ()>{nullptr};
+    return std::function<void()>{nullptr};
   }
 }
 
 bool TaskQueue::empty() const { return queue_.empty(); }
-} // namespace ThreadPool
+}  // namespace ThreadPool
 
-#endif // CPPTHREADPOOL_TASKQUEUE_HPP
+#endif  // CPPTHREADPOOL_TASKQUEUE_HPP
