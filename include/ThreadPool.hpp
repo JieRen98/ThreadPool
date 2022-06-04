@@ -57,7 +57,10 @@ auto ThreadPool::submit(F &&f, Args &&...args) {
 }
 
 void ThreadPool::start() {
-  for (auto &thread : threads_) thread = std::thread{Worker{this}};
+  shutdown_flag_ = false;
+  for (auto &thread : threads_) {
+    thread = std::thread{Worker{this}};
+  }
 }
 
 void ThreadPool::shutdown() {

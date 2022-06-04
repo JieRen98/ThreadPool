@@ -8,7 +8,6 @@
 #include <MyConcepts.h>
 
 #include <condition_variable>
-#include <functional>
 #include <future>
 #include <mutex>
 #include <queue>
@@ -38,7 +37,7 @@ class ThreadPool {
     void operator()() noexcept;
   };
 
-  bool shutdown_flag_{false};
+  bool shutdown_flag_{true};
   std::vector<std::thread> threads_;
   std::condition_variable cv_{};
   std::mutex cv_mutex_{};

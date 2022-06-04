@@ -7,8 +7,6 @@
 
 #include <Common.h>
 
-#include <functional>
-
 namespace ThreadPool {
 ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
 
