@@ -13,12 +13,12 @@ ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
 void ThreadPool::Worker::operator()() noexcept {
   while (!tp_->shutdown_flag_) {
     auto fn = tp_->queue_.popSafe();
-    if (!fn.valid()) {
+    if (fn.valid()) {
+      fn();
+    } else {
       std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
       tp_->cv_.wait(unique_lock);
-      continue;
     }
-    fn();
   }
 }
 }  // namespace ThreadPool
