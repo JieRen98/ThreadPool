@@ -23,8 +23,8 @@ struct IsUniquePtrHelper {
   constexpr static bool value = false;
 };
 
-template <typename Value_t, typename T_Deleter_t>
-struct IsUniquePtrHelper<std::unique_ptr<Value_t, T_Deleter_t>> {
+template <typename... Args>
+struct IsUniquePtrHelper<std::unique_ptr<Args...>> {
   constexpr static bool value = true;
 };
 
