@@ -23,8 +23,6 @@ auto TaskQueue::popSafe() {
     return element{};
   }
 }
-
-bool TaskQueue::empty() const { return queue_.empty(); }
 }  // namespace ThreadPool
 
 #endif  // CPPTHREADPOOL_TASKQUEUE_HPP

@@ -23,8 +23,6 @@ class TaskQueue {
   auto push(element &&fn);
 
   auto popSafe();
-
-  bool empty() const;
 };
 
 enum SubmitKind { Traditional, AutoPtr };
