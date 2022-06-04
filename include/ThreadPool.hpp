@@ -13,8 +13,6 @@
 #include <future>
 #include <tuple>
 
-#define SLEEP_MS_IF_EMPTY 100
-
 namespace ThreadPool {
 template <typename Ret_t>
 struct ThreadPool::SubmitHelper {
@@ -47,17 +45,6 @@ struct ThreadPool::SubmitHelper<void> {
   }
 };
 
-ThreadPool::Dispatcher::Dispatcher(ThreadPool *tp) : tp_(tp) {}
-
-void ThreadPool::Dispatcher::operator()() const {
-  while (!tp_->shutdown_flag_) {
-    if (!tp_->queue_.empty())
-      tp_->cv_.notify_one();
-    else
-      std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_MS_IF_EMPTY));
-  }
-}
-
 ThreadPool::ThreadPool(const std::size_t world_size) : threads_{world_size} {}
 
 template <typename F, CP::IsSupportedPtr... Args>
@@ -65,12 +52,12 @@ auto ThreadPool::submit(F &&f, Args &&...args) {
   auto tuple = SubmitHelper<decltype(f(*args...))>::template call<F, Args...>(
       std::forward<F>(f), std::forward<Args>(args)...);
   queue_.push(std::move(std::get<1>(tuple)));
+  cv_.notify_one();
   return std::move(std::get<0>(tuple));
 }
 
 void ThreadPool::start() {
   for (auto &thread : threads_) thread = std::thread{Worker{this}};
-  dispatcher_thread_ = std::thread(Dispatcher(this));
 }
 
 void ThreadPool::shutdown() {
@@ -79,9 +66,7 @@ void ThreadPool::shutdown() {
   for (auto &thread : threads_) {
     thread.join();
   }
-  dispatcher_thread_.join();
 }
 }  // namespace ThreadPool
 
-#undef SLEEP_MS_IF_EMPTY
 #endif  // CPPTHREADPOOL_THREADPOOL_HPP

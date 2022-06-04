@@ -38,7 +38,6 @@ class ThreadPool {
 
   bool shutdown_flag_{false};
   std::vector<std::thread> threads_;
-  std::thread dispatcher_thread_;
   std::condition_variable cv_{};
   std::mutex cv_mutex_{};
   TaskQueue queue_{};
@@ -47,14 +46,6 @@ class ThreadPool {
 
   template <typename Ret_t>
   struct SubmitHelper;
-
-  struct Dispatcher {
-    ThreadPool *tp_;
-
-    explicit Dispatcher(ThreadPool *tp);
-
-    void operator()() const;
-  };
 
  public:
   explicit ThreadPool(std::size_t world_size);
