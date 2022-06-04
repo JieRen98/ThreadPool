@@ -79,24 +79,14 @@ struct SubmitHelper<Traditional, void> {
   }
 };
 
-template <typename Type>
-struct TypeHelper {
-  using type = Type;
-};
-
-template <>
-struct TypeHelper<void> {
-  using type = void;
-};
-
 template <SubmitKind submitKind>
 struct ReturnTypeHelper;
 
 template <>
 struct ReturnTypeHelper<Traditional> {
   template <typename F, typename... Args>
-  static auto call(F &&f, Args &&...args) ->
-      typename TypeHelper<decltype(f(std::forward<Args...>(args)...))>::type {
+  static auto call(F &&f, Args &&...args)
+      -> decltype(f(std::forward<Args...>(args)...)) {
     return f(std::forward<Args...>(args)...);
   }
 };
@@ -104,8 +94,7 @@ struct ReturnTypeHelper<Traditional> {
 template <>
 struct ReturnTypeHelper<AutoPtr> {
   template <typename F, CP::IsSupportedPtr... Args>
-  static auto call(F &&f, Args &&...args) ->
-      typename TypeHelper<decltype(f((*args)...))>::type {
+  static auto call(F &&f, Args &&...args) -> decltype(f((*args)...)) {
     return f((*args)...);
   }
 };
