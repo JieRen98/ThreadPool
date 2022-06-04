@@ -18,7 +18,7 @@ template <SubmitKind submitKind, typename Ret_t>
 struct SubmitHelper;
 
 template <typename Ret_t>
-struct SubmitHelper<auto_ptr, Ret_t> {
+struct SubmitHelper<AutoPtr, Ret_t> {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<Ret_t> promise{};
@@ -33,7 +33,7 @@ struct SubmitHelper<auto_ptr, Ret_t> {
 };
 
 template <>
-struct SubmitHelper<auto_ptr, void> {
+struct SubmitHelper<AutoPtr, void> {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<void> promise{};
@@ -49,7 +49,7 @@ struct SubmitHelper<auto_ptr, void> {
 };
 
 template <typename Ret_t>
-struct SubmitHelper<traditional, Ret_t> {
+struct SubmitHelper<Traditional, Ret_t> {
   template <typename F, typename... Args>
   static auto call(F &&f, Args &&...args) {
     std::promise<Ret_t> promise{};
@@ -64,7 +64,7 @@ struct SubmitHelper<traditional, Ret_t> {
 };
 
 template <>
-struct SubmitHelper<traditional, void> {
+struct SubmitHelper<Traditional, void> {
   template <typename F, typename... Args>
   static auto call(F &&f, Args &&...args) {
     std::promise<void> promise{};
@@ -93,7 +93,7 @@ template <SubmitKind submitKind>
 struct ReturnTypeHelper;
 
 template <>
-struct ReturnTypeHelper<traditional> {
+struct ReturnTypeHelper<Traditional> {
   template <typename F, typename... Args>
   static auto call(F &&f, Args &&...args) ->
       typename TypeHelper<decltype(f(std::forward<Args...>(args)...))>::type {
@@ -102,7 +102,7 @@ struct ReturnTypeHelper<traditional> {
 };
 
 template <>
-struct ReturnTypeHelper<auto_ptr> {
+struct ReturnTypeHelper<AutoPtr> {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(F &&f, Args &&...args) ->
       typename TypeHelper<decltype(f((*args)...))>::type {

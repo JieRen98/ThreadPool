@@ -27,7 +27,7 @@ class TaskQueue {
   bool empty() const;
 };
 
-enum SubmitKind { traditional, auto_ptr };
+enum SubmitKind { Traditional, AutoPtr };
 
 class ThreadPool {
   class Worker {
@@ -50,7 +50,7 @@ class ThreadPool {
  public:
   explicit ThreadPool(std::size_t world_size);
 
-  template <SubmitKind submitKind = auto_ptr, typename F, typename... Args>
+  template <SubmitKind submitKind = AutoPtr, typename F, typename... Args>
   auto submit(F &&f, Args &&...args);
 
   void start();
