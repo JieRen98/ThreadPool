@@ -14,14 +14,17 @@
 #include <tuple>
 
 namespace ThreadPool {
+template <SubmitKind submitKind, typename Ret_t>
+struct SubmitHelper;
+
 template <typename Ret_t>
-struct ThreadPool::SubmitHelper {
+struct SubmitHelper<auto_ptr, Ret_t> {
   template <typename F, CP::IsSupportedPtr... Args>
-  static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
+  static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<Ret_t> promise{};
     auto future = promise.get_future();
     auto task = std::packaged_task<void()>{
-        [f = std::move(f), ... args = std::move(args),
+        [f = std::forward<F>(f), ... args = std::move(args),
          promise = std::move(promise)]() mutable -> void {
           promise.set_value(f(*args...));
         }};
@@ -30,13 +33,13 @@ struct ThreadPool::SubmitHelper {
 };
 
 template <>
-struct ThreadPool::SubmitHelper<void> {
+struct SubmitHelper<auto_ptr, void> {
   template <typename F, CP::IsSupportedPtr... Args>
-  static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
+  static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<void> promise{};
     auto future = promise.get_future();
     auto task = std::packaged_task<void()>{
-        [f = std::move(f), ... args = std::move(args),
+        [f = std::forward<F>(f), ... args = std::move(args),
          promise = std::move(promise)]() mutable -> void {
           f(*args...);
           promise.set_value();
@@ -45,11 +48,75 @@ struct ThreadPool::SubmitHelper<void> {
   }
 };
 
+template <typename Ret_t>
+struct SubmitHelper<traditional, Ret_t> {
+  template <typename F, typename... Args>
+  static auto call(F &&f, Args &&...args) {
+    std::promise<Ret_t> promise{};
+    auto future = promise.get_future();
+    auto task = std::packaged_task<void()>{
+        [f = std::forward<F>(f), ... args = std::forward<Args>(args),
+         promise = std::move(promise)]() mutable -> void {
+          promise.set_value(f(std::forward<Args>(args)...));
+        }};
+    return std::make_tuple(std::move(future), std::move(task));
+  }
+};
+
+template <>
+struct SubmitHelper<traditional, void> {
+  template <typename F, typename... Args>
+  static auto call(F &&f, Args &&...args) {
+    std::promise<void> promise{};
+    auto future = promise.get_future();
+    auto task = std::packaged_task<void()>{
+        [f = std::forward<F>(f), ... args = std::forward<Args>(args),
+         promise = std::move(promise)]() mutable -> void {
+          f(std::forward<Args>(args)...);
+          promise.set_value();
+        }};
+    return std::make_tuple(std::move(future), std::move(task));
+  }
+};
+
+template <typename Type>
+struct TypeHelper {
+  using type = Type;
+};
+
+template <>
+struct TypeHelper<void> {
+  using type = void;
+};
+
+template <SubmitKind submitKind>
+struct ReturnTypeHelper;
+
+template <>
+struct ReturnTypeHelper<traditional> {
+  template <typename F, typename... Args>
+  static auto call(F &&f, Args &&...args) ->
+      typename TypeHelper<decltype(f(std::forward<Args...>(args)...))>::type {
+    return f(std::forward<Args...>(args)...);
+  }
+};
+
+template <>
+struct ReturnTypeHelper<auto_ptr> {
+  template <typename F, CP::IsSupportedPtr... Args>
+  static auto call(F &&f, Args &&...args) ->
+      typename TypeHelper<decltype(f((*args)...))>::type {
+    return f((*args)...);
+  }
+};
+
 ThreadPool::ThreadPool(const std::size_t world_size) : threads_{world_size} {}
 
-template <typename F, CP::IsSupportedPtr... Args>
+template <SubmitKind submitKind, typename F, typename... Args>
 auto ThreadPool::submit(F &&f, Args &&...args) {
-  auto tuple = SubmitHelper<decltype(f(*args...))>::template call<F, Args...>(
+  using Ret_t = decltype(ReturnTypeHelper<submitKind>::call(
+      std::forward<F>(f), std::forward<Args>(args)...));
+  auto tuple = SubmitHelper<submitKind, Ret_t>::template call<F, Args...>(
       std::forward<F>(f), std::forward<Args>(args)...);
   queue_.push(std::move(std::get<1>(tuple)));
   cv_.notify_one();
