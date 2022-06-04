@@ -11,7 +11,8 @@ supports C++20 or later standards.
     - [x] Solve memory leaking of shared_ptr + lambda
 - [x] New function wrapper that supports move semantics
 - [x] Locked task queue
-    - [x] Add dispatcher struct
+    - [x] ~~Add dispatcher struct~~
+- [x] Traditional mode support
 - [ ] Unlocked task queue
 - [ ] Coroutine supported
 - [ ] (Try) High concurrency support
