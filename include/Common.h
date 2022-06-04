@@ -9,19 +9,21 @@
 
 #include <condition_variable>
 #include <functional>
+#include <future>
 #include <mutex>
 #include <queue>
 #include <thread>
 
 namespace ThreadPool {
 class TaskQueue {
-  std::queue<std::function<void()>> queue_;
+  using element = std::packaged_task<void()>;
+  std::queue<element> queue_;
   mutable std::mutex mutex_;
 
  public:
-  auto push(std::function<void()> &&fn);
+  auto push(element &&fn);
 
-  std::function<void()> popSafe();
+  auto popSafe();
 
   bool empty() const;
 };

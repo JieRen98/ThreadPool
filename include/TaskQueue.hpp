@@ -8,19 +8,19 @@
 #include <Common.h>
 
 namespace ThreadPool {
-auto TaskQueue::push(std::function<void()> &&fn) {
+auto TaskQueue::push(element &&fn) {
   std::unique_lock<std::mutex> unique_lock{mutex_};
   return queue_.push(std::move(fn));
 }
 
-std::function<void()> TaskQueue::popSafe() {
+auto TaskQueue::popSafe() {
   std::unique_lock<std::mutex> unique_lock{mutex_};
   if (!queue_.empty()) {
-    std::function<void()> task_fn{std::move(queue_.front())};
+    auto task_fn = std::move(queue_.front());
     queue_.pop();
     return task_fn;
   } else {
-    return std::function<void()>{nullptr};
+    return element{};
   }
 }
 

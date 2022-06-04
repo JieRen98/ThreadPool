@@ -18,13 +18,14 @@ template <typename Ret_t>
 struct ThreadPool::SubmitHelper {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
-    auto promise = std::make_shared<std::promise<Ret_t>>();
-    auto task_ptr = std::make_shared<std::packaged_task<void()>>(
+    std::promise<Ret_t> promise{};
+    auto future = promise.get_future();
+    auto task = std::packaged_task<void()>{
         [f = std::move(f), ... args = std::move(args),
-         promise = promise]() -> void { promise->set_value(f(*args...)); });
-    std::function<void()> wrapped_fn{
-        [task_ptr = std::move(task_ptr)]() { (*task_ptr)(); }};
-    return std::make_tuple(std::move(promise), std::move(wrapped_fn));
+         promise = std::move(promise)]() mutable -> void {
+          promise.set_value(f(*args...));
+        }};
+    return std::make_tuple(std::move(future), std::move(task));
   }
 };
 
@@ -32,16 +33,15 @@ template <>
 struct ThreadPool::SubmitHelper<void> {
   template <typename F, CP::IsSupportedPtr... Args>
   static auto call(std::decay_t<F> f, std::decay_t<Args>... args) {
-    auto promise = std::make_shared<std::promise<void>>();
-    auto task_ptr = std::make_shared<std::packaged_task<void()>>(
+    std::promise<void> promise{};
+    auto future = promise.get_future();
+    auto task = std::packaged_task<void()>{
         [f = std::move(f), ... args = std::move(args),
-         promise = promise]() -> void {
+         promise = std::move(promise)]() mutable -> void {
           f(*args...);
-          promise->set_value();
-        });
-    std::function<void()> wrapped_fn{
-        [task_ptr = std::move(task_ptr)]() { (*task_ptr)(); }};
-    return std::make_tuple(std::move(promise), std::move(wrapped_fn));
+          promise.set_value();
+        }};
+    return std::make_tuple(std::move(future), std::move(task));
   }
 };
 
