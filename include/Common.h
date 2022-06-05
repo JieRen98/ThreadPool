@@ -15,12 +15,12 @@
 
 namespace ThreadPool {
 class TaskQueue {
-  using element = std::packaged_task<void()>;
-  std::queue<element> queue_;
+  using Fn_t = std::packaged_task<void()>;
+  std::queue<Fn_t> queue_;
   mutable std::mutex mutex_;
 
  public:
-  auto push(element &&fn);
+  auto push(Fn_t &&fn);
 
   auto popSafe();
 };

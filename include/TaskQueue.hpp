@@ -8,7 +8,7 @@
 #include <Common.h>
 
 namespace ThreadPool {
-auto TaskQueue::push(element &&fn) {
+auto TaskQueue::push(Fn_t &&fn) {
   std::unique_lock<std::mutex> unique_lock{mutex_};
   return queue_.push(std::move(fn));
 }
@@ -20,7 +20,7 @@ auto TaskQueue::popSafe() {
     queue_.pop();
     return task_fn;
   } else {
-    return element{};
+    return Fn_t{};
   }
 }
 }  // namespace ThreadPool
