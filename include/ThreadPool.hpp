@@ -23,7 +23,7 @@ struct SubmitHelper<AutoPtr, Ret_t> {
   static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<Ret_t> promise{};
     auto future = promise.get_future();
-    auto task = std::packaged_task<void()>{
+    std::packaged_task<void()> task{
         [f = std::forward<F>(f), ... args = std::move(args),
          promise = std::move(promise)]() mutable -> void {
           promise.set_value(f(*args...));
@@ -38,7 +38,7 @@ struct SubmitHelper<AutoPtr, void> {
   static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<void> promise{};
     auto future = promise.get_future();
-    auto task = std::packaged_task<void()>{
+    std::packaged_task<void()> task{
         [f = std::forward<F>(f), ... args = std::move(args),
          promise = std::move(promise)]() mutable -> void {
           f(*args...);
@@ -54,7 +54,7 @@ struct SubmitHelper<Traditional, Ret_t> {
   static auto call(F &&f, Args &&...args) {
     std::promise<Ret_t> promise{};
     auto future = promise.get_future();
-    auto task = std::packaged_task<void()>{
+    std::packaged_task<void()> task{
         [f = std::forward<F>(f), ... args = std::forward<Args>(args),
          promise = std::move(promise)]() mutable -> void {
           promise.set_value(f(std::forward<Args>(args)...));
@@ -69,7 +69,7 @@ struct SubmitHelper<Traditional, void> {
   static auto call(F &&f, Args &&...args) {
     std::promise<void> promise{};
     auto future = promise.get_future();
-    auto task = std::packaged_task<void()>{
+    std::packaged_task<void()> task{
         [f = std::forward<F>(f), ... args = std::forward<Args>(args),
          promise = std::move(promise)]() mutable -> void {
           f(std::forward<Args>(args)...);
