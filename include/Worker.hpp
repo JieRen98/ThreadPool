@@ -8,7 +8,7 @@
 #include <Common.h>
 
 namespace ThreadPool {
-ThreadPool::Worker::Worker(ThreadPool *tp) : tp_(tp) {}
+ThreadPool::Worker::Worker(ThreadPool *tp) : tp_{tp} {}
 
 void ThreadPool::Worker::operator()() noexcept {
   while (!tp_->shutdown_flag_) {
@@ -16,7 +16,7 @@ void ThreadPool::Worker::operator()() noexcept {
     if (fn.valid()) {
       fn();
     } else {
-      std::unique_lock<std::mutex> unique_lock(tp_->cv_mutex_);
+      std::unique_lock<std::mutex> unique_lock{tp_->cv_mutex_};
       tp_->cv_.wait(unique_lock);
     }
   }

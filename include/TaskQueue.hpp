@@ -13,14 +13,14 @@ auto TaskQueue::push(Fn_t &&fn) {
   return queue_.push(std::move(fn));
 }
 
-auto TaskQueue::popSafe() {
+auto TaskQueue::popSafe() -> Fn_t {
   std::unique_lock<std::mutex> unique_lock{mutex_};
   if (!queue_.empty()) {
-    auto task_fn = std::move(queue_.front());
+    Fn_t task_fn{std::move(queue_.front())};
     queue_.pop();
     return task_fn;
   } else {
-    return Fn_t{};
+    return {};
   }
 }
 }  // namespace ThreadPool

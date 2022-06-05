@@ -22,7 +22,7 @@ class TaskQueue {
  public:
   auto push(Fn_t &&fn);
 
-  auto popSafe();
+  auto popSafe() -> Fn_t;
 };
 
 enum SubmitKind { Traditional, AutoPtr };
