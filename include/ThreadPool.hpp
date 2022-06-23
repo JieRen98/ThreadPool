@@ -85,16 +85,15 @@ struct ReturnTypeHelper;
 template <>
 struct ReturnTypeHelper<Traditional> {
   template <typename F, typename... Args>
-  static auto call(F &&f, Args &&...args)
-      -> decltype(f(std::forward<Args...>(args)...)) {
-    return f(std::forward<Args...>(args)...);
+  static auto call(F &&f, Args &&...args) {
+    return f(std::forward<Args>(args)...);
   }
 };
 
 template <>
 struct ReturnTypeHelper<AutoPtr> {
   template <typename F, CP::IsSupportedPtr... Args>
-  static auto call(F &&f, Args &&...args) -> decltype(f((*args)...)) {
+  static auto call(F &&f, Args &&...args) {
     return f((*args)...);
   }
 };
