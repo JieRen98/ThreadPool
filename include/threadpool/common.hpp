@@ -42,7 +42,7 @@ class ThreadPool {
 
   ~ThreadPool();
 
-  template <SubmitKind submitKind = AutoPtr, typename F, typename... Args>
+  template <SubmitKind submitKind = Traditional, typename F, typename... Args>
   auto submit(F &&f, Args &&...args);
 
   void start();
