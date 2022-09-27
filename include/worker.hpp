@@ -5,7 +5,7 @@
 #ifndef CPPTHREADPOOL_WORKER_HPP
 #define CPPTHREADPOOL_WORKER_HPP
 
-#include <Common.h>
+#include <common.h>
 
 namespace ThreadPool {
 ThreadPool::Worker::Worker(ThreadPool *tp) : tp_{tp} {}

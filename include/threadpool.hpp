@@ -5,12 +5,12 @@
 #ifndef CPPTHREADPOOL_THREADPOOL_HPP
 #define CPPTHREADPOOL_THREADPOOL_HPP
 
-#include <Common.h>
-#include <MyConcepts.h>
+#include <common.h>
+#include <my_concepts.h>
 
-#include <Worker.hpp>
 #include <future>
 #include <tuple>
+#include <worker.hpp>
 
 namespace ThreadPool {
 template <SubmitKind submitKind, typename Ret_t>
