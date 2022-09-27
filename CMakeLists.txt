@@ -12,10 +12,7 @@ target_compile_options(ThreadPool INTERFACE -pthread)
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_definitions(-DDEBUG=1)
-#    add_subdirectory(test)
 else ()
     add_definitions(-DDEBUG=0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif ()
-
-add_subdirectory(test)
