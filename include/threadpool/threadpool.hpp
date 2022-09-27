@@ -100,6 +100,10 @@ ThreadPool::ThreadPool(const std::size_t world_size) : world_size_(world_size) {
   start();
 }
 
+ThreadPool::ThreadPool(const std::size_t world_size, const std::size_t queue_size) : world_size_(world_size), queue_(queue_size) {
+  start();
+}
+
 ThreadPool::~ThreadPool() {
   shutdown();
 }

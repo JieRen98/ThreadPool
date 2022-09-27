@@ -38,6 +38,8 @@ class ThreadPool {
  public:
   explicit ThreadPool(std::size_t world_size);
 
+  explicit ThreadPool(std::size_t world_size, std::size_t queue_size);
+
   ~ThreadPool();
 
   template <SubmitKind submitKind = AutoPtr, typename F, typename... Args>
