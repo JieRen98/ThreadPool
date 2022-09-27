@@ -5,14 +5,13 @@
 #ifndef CPPTHREADPOOL_COMMON_H
 #define CPPTHREADPOOL_COMMON_H
 
-#include <my_concepts.h>
-
 #include <boost/lockfree/queue.hpp>
 #include <condition_variable>
 #include <future>
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <threadpool/my_concepts.hpp>
 
 namespace ThreadPool {
 enum SubmitKind { Traditional, AutoPtr };
