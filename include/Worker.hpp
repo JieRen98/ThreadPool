@@ -12,9 +12,13 @@ ThreadPool::Worker::Worker(ThreadPool *tp) : tp_{tp} {}
 
 void ThreadPool::Worker::operator()() noexcept {
   while (!tp_->shutdown_flag_) {
-    auto fn = tp_->queue_.popSafe();
-    if (fn.valid()) {
-      fn();
+    if (!tp_->queue_.empty()) {
+      std::packaged_task<void()> *fn;
+      bool success = tp_->queue_.pop(fn);
+      if (success) {
+        (*fn)();
+        delete fn;
+      }
     } else {
       std::unique_lock<std::mutex> unique_lock{tp_->cv_mutex_};
       tp_->cv_.wait(unique_lock);

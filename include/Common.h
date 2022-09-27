@@ -7,6 +7,7 @@
 
 #include <MyConcepts.h>
 
+#include <boost/lockfree/queue.hpp>
 #include <condition_variable>
 #include <future>
 #include <mutex>
@@ -14,17 +15,6 @@
 #include <thread>
 
 namespace ThreadPool {
-class TaskQueue {
-  using Fn_t = std::packaged_task<void()>;
-  std::queue<Fn_t> queue_;
-  mutable std::mutex mutex_;
-
- public:
-  auto push(Fn_t &&fn);
-
-  auto popSafe() -> Fn_t;
-};
-
 enum SubmitKind { Traditional, AutoPtr };
 
 class ThreadPool {
@@ -41,7 +31,7 @@ class ThreadPool {
   std::vector<std::thread> threads_;
   std::condition_variable cv_{};
   std::mutex cv_mutex_{};
-  TaskQueue queue_{};
+  boost::lockfree::queue<std::packaged_task<void()> *> queue_;
 
   friend Worker;
 

@@ -3,14 +3,19 @@ project(ThreadPool)
 
 set(CMAKE_CXX_STANDARD 20)
 
-include_directories(include)
+find_package(Boost REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+add_library(ThreadPool INTERFACE)
+target_include_directories(ThreadPool INTERFACE include)
+target_link_libraries(ThreadPool INTERFACE Boost::boost)
+target_compile_options(ThreadPool INTERFACE -pthread)
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_definitions(-DDEBUG=1)
-    add_subdirectory(test)
+#    add_subdirectory(test)
 else ()
     add_definitions(-DDEBUG=0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif ()
+
+add_subdirectory(test)

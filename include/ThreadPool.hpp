@@ -8,7 +8,6 @@
 #include <Common.h>
 #include <MyConcepts.h>
 
-#include <TaskQueue.hpp>
 #include <Worker.hpp>
 #include <future>
 #include <tuple>
@@ -23,12 +22,12 @@ struct SubmitHelper<AutoPtr, Ret_t> {
   static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<Ret_t> promise{};
     auto future = promise.get_future();
-    std::packaged_task<void()> task{
+    auto task = new std::packaged_task<void()>{
         [f = std::forward<F>(f), ... args = std::move(args),
          promise = std::move(promise)]() mutable -> void {
           promise.set_value(f(*args...));
         }};
-    return std::make_tuple(std::move(future), std::move(task));
+    return std::make_tuple(std::move(future), task);
   }
 };
 
@@ -38,13 +37,13 @@ struct SubmitHelper<AutoPtr, void> {
   static auto call(F &&f, std::decay_t<Args>... args) {
     std::promise<void> promise{};
     auto future = promise.get_future();
-    std::packaged_task<void()> task{
+    auto task = new std::packaged_task<void()>{
         [f = std::forward<F>(f), ... args = std::move(args),
          promise = std::move(promise)]() mutable -> void {
           f(*args...);
           promise.set_value();
         }};
-    return std::make_tuple(std::move(future), std::move(task));
+    return std::make_tuple(std::move(future), task);
   }
 };
 
@@ -54,12 +53,12 @@ struct SubmitHelper<Traditional, Ret_t> {
   static auto call(F &&f, Args &&...args) {
     std::promise<Ret_t> promise{};
     auto future = promise.get_future();
-    std::packaged_task<void()> task{
+    auto task = new std::packaged_task<void()>{
         [f = std::forward<F>(f), ... args = std::forward<Args>(args),
          promise = std::move(promise)]() mutable -> void {
           promise.set_value(f(std::forward<Args>(args)...));
         }};
-    return std::make_tuple(std::move(future), std::move(task));
+    return std::make_tuple(std::move(future), task);
   }
 };
 
@@ -69,13 +68,13 @@ struct SubmitHelper<Traditional, void> {
   static auto call(F &&f, Args &&...args) {
     std::promise<void> promise{};
     auto future = promise.get_future();
-    std::packaged_task<void()> task{
+    auto task = new std::packaged_task<void()>{
         [f = std::forward<F>(f), ... args = std::forward<Args>(args),
          promise = std::move(promise)]() mutable -> void {
           f(std::forward<Args>(args)...);
           promise.set_value();
         }};
-    return std::make_tuple(std::move(future), std::move(task));
+    return std::make_tuple(std::move(future), task);
   }
 };
 
@@ -106,7 +105,7 @@ auto ThreadPool::submit(F &&f, Args &&...args) {
       std::forward<F>(f), std::forward<Args>(args)...));
   auto tuple = SubmitHelper<submitKind, Ret_t>::template call<F, Args...>(
       std::forward<F>(f), std::forward<Args>(args)...);
-  queue_.push(std::move(std::get<1>(tuple)));
+  queue_.push(std::get<1>(tuple));
   cv_.notify_one();
   return std::move(std::get<0>(tuple));
 }
@@ -123,6 +122,13 @@ void ThreadPool::shutdown() {
   cv_.notify_all();
   for (auto &thread : threads_) {
     thread.join();
+  }
+  while (!queue_.empty()) {
+    std::packaged_task<void()> *task;
+    bool success = queue_.pop(task);
+    if (success) {
+      delete task;
+    }
   }
 }
 }  // namespace ThreadPool
