@@ -96,7 +96,13 @@ struct ReturnTypeHelper<AutoPtr> {
   }
 };
 
-ThreadPool::ThreadPool(const std::size_t world_size) : threads_{world_size} {}
+ThreadPool::ThreadPool(const std::size_t world_size) : world_size_(world_size) {
+  start();
+}
+
+ThreadPool::~ThreadPool() {
+  shutdown();
+}
 
 template <SubmitKind submitKind, typename F, typename... Args>
 auto ThreadPool::submit(F &&f, Args &&...args) {
@@ -110,6 +116,7 @@ auto ThreadPool::submit(F &&f, Args &&...args) {
 }
 
 void ThreadPool::start() {
+  threads_.resize(world_size_);
   shutdown_flag_ = false;
   for (auto &thread : threads_) {
     thread = std::thread{Worker{this}};

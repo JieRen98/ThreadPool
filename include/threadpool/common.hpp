@@ -26,6 +26,7 @@ class ThreadPool {
     void operator()() noexcept;
   };
 
+  std::size_t world_size_;
   bool shutdown_flag_{true};
   std::vector<std::thread> threads_;
   std::condition_variable cv_{};
@@ -36,6 +37,8 @@ class ThreadPool {
 
  public:
   explicit ThreadPool(std::size_t world_size);
+
+  ~ThreadPool();
 
   template <SubmitKind submitKind = AutoPtr, typename F, typename... Args>
   auto submit(F &&f, Args &&...args);
